@@ -11,7 +11,7 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def home():
     top_artist = {}
-    top_artist = requestHandler.getTopArtists()
+    top_artist = requestHandler.topGlobal()
     return render_template('home.html', top_artist=top_artist)
 
 

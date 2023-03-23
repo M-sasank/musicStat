@@ -1,3 +1,7 @@
+import base64
+import webbrowser
+from urllib.parse import urlencode
+
 import requests
 import json
 import spotipy
@@ -160,6 +164,37 @@ def getTopArtists():
         z = getImageArtist(x)
         top_artists.append((x,y,z))
     return top_artists
+
+def getTokenSpotify():
+
+
+    encoded_credentials = base64.b64encode(CLIENT_ID.encode() + b':' + CLIENT_SECRET.encode()).decode("utf-8")
+
+    token_headers = {
+        "Authorization": "Basic " + encoded_credentials,
+    }
+
+    token_data = {
+        "grant_type": "authorization_code",
+    }
+
+    r = requests.post("https://accounts.spotify.com/api/token", data=token_data, headers=token_headers)
+    return r
+def topGlobal():
+    auth_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+    sp = spotipy.Spotify(auth_manager=auth_manager)
+
+    # Specify the country code for which you want to fetch the top charts
+    country_code = 'IN'
+    top_artist = []
+    # Get the top 10 tracks for the specified country
+    top_tracks = sp.playlist_items('spotify:playlist:37i9dQZEVXbLRQDuF5jeBp', market=country_code, limit=10)
+    for i in range(10):
+        y = top_tracks['items'][i]['track']['artists'][0]['name']
+        x = top_tracks['items'][i]['track']['name']
+        z = top_tracks['items'][i]['track']['album']['images'][0]['url']
+        top_artist.append((x,y,z))
+    return top_artist
 
 def getTopTracksUser(username='sasankmadati'):
     API_KEY = LAST_FM_KEY
