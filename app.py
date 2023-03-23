@@ -14,7 +14,15 @@ def home():
     top_artist = requestHandler.topGlobal()
     return render_template('home.html', top_artist=top_artist)
 
+@app.route('/history', methods=['GET'])
+def history():
+    history = requestHandler.getHistory()
+    return render_template('history.html',history=history)
 
+@app.route('/usera', methods=['GET'])
+def userArtists():
+    userArtists = requestHandler.getUserArtists()
+    return render_template('you.html',userArtists=userArtists)
 @app.route('/search')
 def artist_application():
     return render_template('input.html')
