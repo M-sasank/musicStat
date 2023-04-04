@@ -6,32 +6,46 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link href="https://fonts.googleapis.com/css?family=Quicksand|Playfair+Display|" rel="stylesheet">
 
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-<a class="navbar-brand" href="#">musicStat</a>
-<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-<span class="navbar-toggler-icon"></span>
-</button>
-<div class="collapse navbar-collapse" id="navbarNav">
-<ul class="navbar-nav">
-  <li class="nav-item active">
-    <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/search">Search</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="/you">forYou</a>
-  </li>
-  <li class="nav-item">
-    <a class="nav-link" href="#">Tastes</a>
-  </li>
-</ul>
-</div>
+ <nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <a class="navbar-brand" href="/">musicStat</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item active">
+        <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/search">Search</a>
+      </li>
+      <li class="dropdown">
+        <a class="nav-link" id = "yourTop" href="/you/tracks">Your Top</a>
+          <div class="dropdown-content">
+        <a href="/you/artists/short">TopArtists</a>
+        <a href="/you/tracks">TopTracks</a>
+        <a href="/you/genres">TopGenres</a>
+        </div>
+
+      </li>
+        <li class="nav-item">
+        <a class="nav-link" href="/history">History</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#">Your Tastes</a>
+      </li>
+    </ul>
+  </div>
 </nav>
 
 <h2 class='user'>{{username}}</h2>
 
 <div class="user-info">
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <a id = 'shortPeriod' href='/you/tracks' class="nav-link active">Last 1 Month</a>
+        <a id = 'mediumPeriod' href='/you/tracks/medium' class="nav-link active">Last 6 Month</a>
+        <a id = 'longPeriod' href='/you/tracks/long' class="nav-link active">Lifetime</a>
+    </div>
     {% for track in top_tracks %}
         <div class="flex-container">
     <div class="flex-left">

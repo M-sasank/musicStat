@@ -7,6 +7,59 @@ header {
     border-color: white;
 }
 
+nav {
+    width: auto;
+  background-color: #333;
+  height: 50px;
+}
+
+nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+}
+
+nav li {
+  margin: 0;
+  padding: 0;
+  height: 50px;
+  line-height: 50px;
+}
+
+nav a {
+  display: inline;
+    width: auto;
+    color: black;
+
+  padding: 0 20px;
+  text-decoration: none;
+}
+
+nav a:hover {
+  background-color: #555;
+    color: black;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  top: 50px;
+  background-color: #f9f9f9;
+  z-index: 1;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+
+}
+
+
+
 h1 {
     color: #ba0000;
     text-align: center;

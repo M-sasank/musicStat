@@ -14,26 +14,65 @@ def home():
     top_artist = requestHandler.topGlobal()
     return render_template('home.html', top_artist=top_artist)
 
+
 @app.route('/history', methods=['GET'])
 def history():
     history = requestHandler.getHistory()
-    return render_template('history.html',history=history)
+    return render_template('history.html', history=history)
 
-@app.route('/usera', methods=['GET'])
+
+@app.route('/you/artists/short', methods=['GET'])
 def userArtists():
-    userArtists = requestHandler.getUserArtists()
-    return render_template('you.html',userArtists=userArtists)
+    userArtists = requestHandler.getUserArtists('short_term')
+    return render_template('userArtitsts.html', userArtists=userArtists)
+
+
+@app.route('/you/artists/medium', methods=['GET'])
+def userArtists1():
+    userArtists1 = requestHandler.getUserArtists('medium_term')
+    return render_template('userArtitsts.html', userArtists=userArtists1)
+
+
+@app.route('/you/artists/long', methods=['GET'])
+def userArtists2():
+    userArtists2 = requestHandler.getUserArtists('long_term')
+    return render_template('userArtitsts.html', userArtists=userArtists2)
+
+
 @app.route('/search')
 def artist_application():
     return render_template('input.html')
 
+@app.route('/you/genres')
+def genre(username='sasankmadati', term='short_term'):
+    genres = requestHandler.getGenres(username,'short_term')
+    return render_template('genre.html', data=genres)
+@app.route('/you/genres/medium')
+def genreMed(username='sasankmadati', term='medium_term'):
+    genres = requestHandler.getGenres(username,term)
+    return render_template('genre.html', data=genres)
+@app.route('/you/genres/long')
+def genreLong(username='sasankmadati', term='long_term'):
+    genres = requestHandler.getGenres(username,term)
+    return render_template('genre.html', data=genres)
 
-@app.route('/you', methods=['GET'])
+@app.route('/you/tracks', methods=['GET'])
 def you():
     top_tracks = []
-    top_tracks = requestHandler.getTopTracksUser()
+    top_tracks = requestHandler.getTopTracksUser(term='short_term')
     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
 
+@app.route('/you/tracks/medium', methods=['GET'])
+def youMed():
+    top_tracks = []
+    top_tracks = requestHandler.getTopTracksUser(term='medium_term')
+    return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
+
+@app.route('/you/tracks/long', methods=['GET'])
+def youLong():
+    top_tracks = []
+    top_tracks = requestHandler.getTopTracksUser(term='long_term')
+    return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
 
 @app.route('/handle_form', methods=['POST'])
 def submitted_artist():

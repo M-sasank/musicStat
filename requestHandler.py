@@ -194,10 +194,10 @@ def topGlobal():
     sp = spotipy.Spotify(auth_manager=auth_manager)
 
     # Specify the country code for which you want to fetch the top charts
-    country_code = 'IN'
+    country_code = 'US'
     top_artist = []
     # Get the top 10 tracks for the specified country
-    top_tracks = sp.playlist_items('spotify:playlist:37i9dQZEVXbLRQDuF5jeBp', market=country_code, limit=10)
+    top_tracks = sp.playlist_items('spotify:playlist:37i9dQZEVXbNG2KDcFcKOF', market=country_code, limit=10)
     for i in range(10):
         y = top_tracks['items'][i]['track']['artists'][0]['name']
         x = top_tracks['items'][i]['track']['name']
@@ -205,18 +205,19 @@ def topGlobal():
         top_artist.append((x, y, z))
     return top_artist
 
-def getUserArtists():
+def getUserArtists(term):
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,redirect_uri='http://localhost:7777/callback',scope='user-top-read', username=spotify_username))
-    results = sp.current_user_top_artists(limit=10, time_range='medium_term')
+    results = sp.current_user_top_artists(limit=10, time_range=term)
     topUserArtists = []
     for item in range(10):
         x = results['items'][item]['name']
+        y = results['items'][item]['popularity']
         # image url here
         z = results['items'][item]['images'][0]['url']
-        topUserArtists.append((x, z))
+        topUserArtists.append((x,y, z))
     return topUserArtists
 
-def getTopTracksUser(username='sasankmadati'):
+def getTopTracksUser(username='sasankmadati' ,term='short_term'):
 
 
     # create a SpotifyOAuth object to authenticate the user
@@ -225,7 +226,7 @@ def getTopTracksUser(username='sasankmadati'):
                                                    scope='user-top-read', username=spotify_username))
 
     # get the user's top 10 tracks
-    results = sp.current_user_top_tracks(limit=10, time_range='medium_term')
+    results = sp.current_user_top_tracks(limit=10, time_range=term)
     topUserTracks = []
     for item in range(10):
         x = results['items'][item]['name']
@@ -234,6 +235,7 @@ def getTopTracksUser(username='sasankmadati'):
         # image url here
         z = results['items'][item]['album']['images'][0]['url']
         topUserTracks.append((x, y, z))
+    print(topUserTracks)
     return topUserTracks
 
 
@@ -436,10 +438,45 @@ def build_artist_profile(artist_inst):
 
 
 def getHistory():
-    results = spotipy.current_user_recently_played(limit=50)
+    # get users listening history using spotipy
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                                                   redirect_uri='http://localhost:7777/callback',
+                                                   scope='user-read-recently-played', username=spotify_username))
+    results = sp.current_user_recently_played(limit=50)
     history = []
     for item in results['items']:
         artist = item['track']['artists'][0]['name']
         song = item['track']['name']
-        history.append((artist, song))
+        # image of the song
+        image = item['track']['album']['images'][0]['url']
+
+        history.append((artist, song,image))
     return history
+
+
+def getGenres(username,term):
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                                                   redirect_uri='http://localhost:7777/callback',
+                                                   scope='user-top-read', username=spotify_username))
+    topTracks = sp.current_user_top_tracks(limit=50, time_range=term)
+    genres = []
+    for item in range(50):
+        x = topTracks['items'][item]['artists'][0]['id']
+        y = sp.artist(x)
+        for genre in y['genres']:
+            genres.append(genre)
+    # count the occurence of each genre
+    genreCount = {}
+    for genre in genres:
+        if genre in genreCount:
+            genreCount[genre] += 1
+        else:
+            genreCount[genre] = 1
+    total = sum(genreCount.values())
+    top10 = sum(sorted(genreCount.values(), reverse=True)[:15])
+    # sort the dictionary by value
+    sortedGenres = sorted(genreCount.items(), key=lambda x: x[1], reverse=True)
+    data = list()
+    for item in sortedGenres[:15]:
+        data.append([item[0], item[1]])
+    return data
