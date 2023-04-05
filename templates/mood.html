@@ -5,7 +5,6 @@
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.6/dist/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link href="https://fonts.googleapis.com/css?family=Quicksand|Playfair+Display|" rel="stylesheet">
-
  <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <a class="navbar-brand" href="/">musicStat</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -24,7 +23,7 @@
           <div class="dropdown-content">
         <a href="/you/artists/short">TopArtists</a>
         <a href="/you/tracks">TopTracks</a>
-        <a href="#">TopGenres</a>
+        <a href="/you/genres">TopGenres</a>
         </div>
 
       </li>
@@ -32,30 +31,24 @@
         <a class="nav-link" href="/history">History</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/moody">Your Tastes</a>
+       <a class="nav-link" href="/moody">Your Tastes</a>
       </li>
     </ul>
   </div>
 </nav>
-<body>
-<div class='artist-info'>
-<table>
-    <tr>
-    <th>Artist Name</th>
-    <th>Song Name</th>
-    </tr>
-    {% for row in history %}
-    <tr>
-      <td>{{row[0]}}</td>
-    <td> {{ row[1] }}</td>
-    </tr>
-    {% endfor %}
 
-</table>
+<h2 class='user'>{{username}}</h2>
+
+<div class="user-info">
+    <div class="user-info__image">
+        <h2>Which music are you feeling now?</h2>
+    </div>
+    <div>
+        <a href="/generate/dance" onclick="loading();">Dance</a>
+        <a href="/generate/pop" onclick="loading();">Pop</a>
+        <a href="/generate/sad" onclick="loading();">Sad Lofi</a>
+        <a href="/generate/edm" onclick="loading();">EDM</a>
+        <a href="/generate/k-pop" onclick="loading();" >K-Pop</a>
+        <a href="/generate/rap" onclick="loading();">Rap</a>
+    </div>
 </div>
-</body>
-</html>
-<!doctype html>
-
-
-

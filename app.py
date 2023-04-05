@@ -43,18 +43,24 @@ def userArtists2():
 def artist_application():
     return render_template('input.html')
 
+
 @app.route('/you/genres')
 def genre(username='sasankmadati', term='short_term'):
-    genres = requestHandler.getGenres(username,'short_term')
+    genres = requestHandler.getGenres(username, 'short_term')
     return render_template('genre.html', data=genres)
+
+
 @app.route('/you/genres/medium')
 def genreMed(username='sasankmadati', term='medium_term'):
-    genres = requestHandler.getGenres(username,term)
+    genres = requestHandler.getGenres(username, term)
     return render_template('genre.html', data=genres)
+
+
 @app.route('/you/genres/long')
 def genreLong(username='sasankmadati', term='long_term'):
-    genres = requestHandler.getGenres(username,term)
+    genres = requestHandler.getGenres(username, term)
     return render_template('genre.html', data=genres)
+
 
 @app.route('/you/tracks', methods=['GET'])
 def you():
@@ -62,17 +68,50 @@ def you():
     top_tracks = requestHandler.getTopTracksUser(term='short_term')
     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
 
+
 @app.route('/you/tracks/medium', methods=['GET'])
 def youMed():
     top_tracks = []
     top_tracks = requestHandler.getTopTracksUser(term='medium_term')
     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
 
+
 @app.route('/you/tracks/long', methods=['GET'])
 def youLong():
     top_tracks = []
     top_tracks = requestHandler.getTopTracksUser(term='long_term')
     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
+
+
+@app.route('/moody')
+def mood():
+    return render_template('mood.html', username= 'sasankmadati')
+
+
+@app.route('/generate/<genre>', methods=['GET', 'POST'])
+def generate(genre):
+    if genre == 'dance':
+        playlistID = '37i9dQZF1DXcBWIGoYBM5M'
+    elif genre == 'pop':
+        playlistID = '6gS3HhOiI17QNojjPuPzqc'
+    elif genre == 'sad':
+        playlistID = '1uN3iCLmAXg6rmS86SJM7g'
+    elif genre == 'edm':
+        playlistID = '3pDxuMpz94eDs7WFqudTbZ'
+    elif genre == 'k-pop':
+        playlistID = '3T1Rft817cZ3pguTvaWaz3'
+    elif genre == 'anime':
+        playlistID = '5fSZTu6aISl80OPrmGu79j'
+    elif genre == 'j-pop':
+        playlistID = '3leFycE2a7uXZyuC6DQbdQ'
+    elif genre == 'rap':
+        playlistID = '6s5MoZzR70Qef7x4bVxDO1'
+    else:
+        playlistID = '2nGEGNVprpAm4qJ0ShRjOv'
+    playlistDetails = requestHandler.getRecommendationsByGenre(playlistID)
+    return render_template('generate.html', playlistDetails=playlistDetails, genre=genre,
+                           username=requestHandler.spotify_username)
+
 
 @app.route('/handle_form', methods=['POST'])
 def submitted_artist():

@@ -7,7 +7,6 @@ import json
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
-import secrets  # file that contains your API key
 import time
 import sqlite3
 from flask import Flask, render_template
@@ -205,8 +204,11 @@ def topGlobal():
         top_artist.append((x, y, z))
     return top_artist
 
+
 def getUserArtists(term):
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,redirect_uri='http://localhost:7777/callback',scope='user-top-read', username=spotify_username))
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                                                   redirect_uri='http://localhost:7777/callback', scope='user-top-read',
+                                                   username=spotify_username))
     results = sp.current_user_top_artists(limit=10, time_range=term)
     topUserArtists = []
     for item in range(10):
@@ -214,12 +216,11 @@ def getUserArtists(term):
         y = results['items'][item]['popularity']
         # image url here
         z = results['items'][item]['images'][0]['url']
-        topUserArtists.append((x,y, z))
+        topUserArtists.append((x, y, z))
     return topUserArtists
 
-def getTopTracksUser(username='sasankmadati' ,term='short_term'):
 
-
+def getTopTracksUser(username='sasankmadati', term='short_term'):
     # create a SpotifyOAuth object to authenticate the user
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                                                    redirect_uri='http://localhost:7777/callback',
@@ -450,11 +451,11 @@ def getHistory():
         # image of the song
         image = item['track']['album']['images'][0]['url']
 
-        history.append((artist, song,image))
+        history.append((artist, song, image))
     return history
 
 
-def getGenres(username,term):
+def getGenres(username, term):
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                                                    redirect_uri='http://localhost:7777/callback',
                                                    scope='user-top-read', username=spotify_username))
@@ -480,3 +481,23 @@ def getGenres(username,term):
     for item in sortedGenres[:15]:
         data.append([item[0], item[1]])
     return data
+
+
+def getRecommendationsByGenre(playlist):
+    scope = 'user-library-read playlist-modify-public playlist-read-private'
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
+                                                   redirect_uri='http://localhost:7777/callback',
+                                                   scope=scope, username=spotify_username))
+    sourcePlaylist = sp.playlist(playlist)
+    seed_ids = []
+    for i in range(0, 10):
+        seed_ids.append(sourcePlaylist['tracks']['items'][i]['track']['id'])
+    rec_tracks = []
+    for i in seed_ids:
+        rec_tracks += sp.recommendations(seed_tracks=[i], limit=20)['tracks']
+    recs_to_add = []
+    for i in range(0, 20):
+        recs_to_add.append(rec_tracks[i]['id'])
+    playlist_recs = sp.user_playlist_create(spotify_username, name='Songs from {}'.format(sourcePlaylist['name']))
+    sp.user_playlist_add_tracks(spotify_username, playlist_recs['id'], recs_to_add)
+    return playlist_recs
