@@ -1,5 +1,6 @@
 import base64
 import webbrowser
+from datetime import datetime, timedelta
 from urllib.parse import urlencode
 
 import requests
@@ -457,8 +458,24 @@ def getHistory():
         song = item['track']['name']
         # image of the song
         image = item['track']['album']['images'][0]['url']
+        timestamp = item['played_at']
+        timestamp = timestamp[:19]
 
-        history.append((artist, song, image))
+        # print(timestamp)
+        # convert timestamp from zulu to ist
+        timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%S')
+        timestamp = timestamp + timedelta(hours=5, minutes=30)
+        timestamp = timestamp.strftime('%Y-%m-%d %H:%M')
+        # convert into AM and PM
+        timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M')
+        timestamp = timestamp.strftime('%Y-%m-%d %I:%M %p')
+
+
+
+
+
+
+        history.append((artist, song, image, timestamp))
     return history
 
 
