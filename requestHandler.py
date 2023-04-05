@@ -10,11 +10,18 @@ from spotipy.oauth2 import SpotifyOAuth
 import time
 import sqlite3
 from flask import Flask, render_template
-
-CLIENT_SECRET = 'ecf3ff7d354741468d66ae216276f305'
 CLIENT_ID = '8c3a7ba894f74164a797d3e0512b7f82'
-spotify_username = '31ksezewtk5zlagthryjgp4sbqwm'
 LAST_FM_KEY = '304036bcba16c776159057cf1ea09aa2'
+CLIENT_SECRET = 'ecf3ff7d354741468d66ae216276f305'
+
+def init_user():
+    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri='http://localhost:7777/callback', scope='user-top-read'))
+    user = sp.current_user()
+    spotify_username = user['id']
+    return spotify_username
+
+spotify_username = init_user()
+
 
 CACHE_FILE_NAME = 'cacheArtistSearch.json'
 CACHE_DICT = {}
@@ -478,8 +485,12 @@ def getGenres(username, term):
     # sort the dictionary by value
     sortedGenres = sorted(genreCount.items(), key=lambda x: x[1], reverse=True)
     data = list()
-    for item in sortedGenres[:15]:
+    for item in sortedGenres[:12]:
         data.append([item[0], item[1]])
+    # add to the front of the list, ["Task":"Genres"]
+    # data.insert(0, ["Task", "Genres"])
+    for item in data:
+        print(item[0], int(item[1]))
     return data
 
 
@@ -487,7 +498,8 @@ def getRecommendationsByGenre(playlist):
     scope = 'user-library-read playlist-modify-public playlist-read-private'
     sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
                                                    redirect_uri='http://localhost:7777/callback',
-                                                   scope=scope, username=spotify_username))
+                                                   scope=scope))
+    spotify_username = sp.me()['id']
     sourcePlaylist = sp.playlist(playlist)
     seed_ids = []
     for i in range(0, 10):

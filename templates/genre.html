@@ -15,7 +15,9 @@
 
         var data = google.visualization.arrayToDataTable([
           ['Task', 'Top Genres'],
-            ['pop', 15], ['electropop', 10], ['dance pop', 8], ['pop dance', 7], ['k-pop', 6], ['tropical house', 6], ['edm', 6], ['alt z', 4], ['tamil pop', 3]
+                        {% for d in data %}
+                ['{{d[0]}}',{{d[1]}}],
+            {% endfor %}
         ]);
 
         var options = {
@@ -45,11 +47,11 @@
         <a class="nav-link" href="/search">Search</a>
       </li>
       <li class="dropdown">
-        <a class="nav-link" id = "yourTop" href="/you/tracks">Your Top</a>
+        <a class="nav-link" id = "yourTop" href="/you/tracks/short">Your Top</a>
           <div class="dropdown-content">
         <a href="/you/artists/short">TopArtists</a>
-        <a href="/you/tracks">TopTracks</a>
-        <a href="#">TopGenres</a>
+        <a href="/you/tracks/short">TopTracks</a>
+        <a href="/you/genres/short">TopGenres</a>
         </div>
 
       </li>
@@ -67,14 +69,14 @@
 
 <div class="user-info">
     <div class="btn-group" role="group" aria-label="Basic example">
-        <a id = 'shortPeriod' href='/you/genres' class="nav-link active">Last 1 Month</a>
+        <a id = 'shortPeriod' href='/you/genres/short' class="nav-link active">Last 1 Month</a>
         <a id = 'mediumPeriod' href='/you/genres/medium' class="nav-link active">Last 6 Month</a>
         <a id = 'longPeriod' href='/you/genres/long' class="nav-link active">Lifetime</a>
     </div>
 	<div style="margin: 10px 0 0 10px;width: 1000px">
 		<h3>Your Top Genres</h3>
         <br>
-        <h4>Top Genre is  : Pop</h4>
+        <h4>Top Genre is  : {{ data[0][0] }}</h4>
 
 		<div id="piechart" style="width: 900px; height: 500px;"></div>
 	</div>

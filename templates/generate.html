@@ -20,11 +20,11 @@
         <a class="nav-link" href="/search">Search</a>
       </li>
       <li class="dropdown">
-        <a class="nav-link" id = "yourTop" href="/you/tracks">Your Top</a>
+        <a class="nav-link" id = "yourTop" href="/you/tracks/short">Your Top</a>
           <div class="dropdown-content">
         <a href="/you/artists/short">TopArtists</a>
-        <a href="/you/tracks">TopTracks</a>
-        <a href="/you/genres">TopGenres</a>
+        <a href="/you/tracks/short">TopTracks</a>
+        <a href="/you/genres/short">TopGenres</a>
         </div>
 
       </li>
@@ -98,6 +98,8 @@
 
 <div style="display:none;" id="myDiv" class="animate-bottom">
   <h2>Succesfully generated the playlist for the genre {{ genre }}</h2>
+    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/{{ playlistDetails['id'] }}?utm_source=generator" width="60%" height="550" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <br>
     <a href = "{{ playlistDetails['external_urls']['spotify']}}">Click here to go to the playlist</a>
 </div>
 

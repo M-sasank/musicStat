@@ -19,11 +19,11 @@
         <a class="nav-link" href="/search">Search</a>
       </li>
       <li class="dropdown">
-        <a class="nav-link" id = "yourTop" href="/you/tracks">Your Top</a>
+        <a class="nav-link" id = "yourTop" href="/you/track/short">Your Top</a>
           <div class="dropdown-content">
         <a href="/you/artists/short">TopArtists</a>
-        <a href="/you/tracks">TopTracks</a>
-        <a href="/you/genres">TopGenres</a>
+        <a href="/you/tracks/short">TopTracks</a>
+        <a href="/you/genres/short">TopGenres</a>
         </div>
 
       </li>
@@ -36,19 +36,74 @@
     </ul>
   </div>
 </nav>
+<style>
+    .buttons{
+        align-items: center;
+        justify-content: center;
+        display: block;
+        margin: 100px;
+    }
+.button-40 {
+  background-color: #111827;
+  border: 1px solid transparent;
+  border-radius: .75rem;
+  box-sizing: border-box;
+  color: #FFFFFF;
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-family: "Inter var",ui-sans-serif,system-ui,-apple-system,system-ui,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5rem;
+  padding: .75rem 1.2rem;
 
+  text-align: center;
+  text-decoration: none #6B7280 solid;
+  text-decoration-thickness: auto;
+  transition-duration: .2s;
+  transition-property: background-color,border-color,color,fill,stroke;
+  transition-timing-function: cubic-bezier(.4, 0, 0.2, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  width: auto;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.button-40:hover {
+  background-color: #374151;
+
+}
+
+.button-40:focus {
+  box-shadow: none;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+@media (min-width: 768px) {
+  .button-40 {
+    padding: .75rem 1.5rem;
+  }
+}
+    </style>
 <h2 class='user'>{{username}}</h2>
 
 <div class="user-info">
     <div class="user-info__image">
         <h2>Which music are you feeling now?</h2>
     </div>
-    <div>
-        <a href="/generate/dance" onclick="loading();">Dance</a>
-        <a href="/generate/pop" onclick="loading();">Pop</a>
-        <a href="/generate/sad" onclick="loading();">Sad Lofi</a>
-        <a href="/generate/edm" onclick="loading();">EDM</a>
-        <a href="/generate/k-pop" onclick="loading();" >K-Pop</a>
-        <a href="/generate/rap" onclick="loading();">Rap</a>
+    <div class = 'buttons'>
+        <a class = 'button-40' href="/generate/dance" onclick="loading();">Dance</a>
+        <a class = 'button-40' href="/generate/pop" onclick="loading();">Pop</a>
+        <a class = 'button-40' href="/generate/sad" onclick="loading();">Sad Lofi</a>
+        <a class = 'button-40' href="/generate/edm" onclick="loading();">EDM</a>
+        <a class = 'button-40' href="/generate/k-pop" onclick="loading();" >K-Pop</a>
+        <a class = 'button-40' href="/generate/anime" onclick="loading();">Anime</a>
+        <a class = 'button-40' href="/generate/j-pop" onclick="loading();">J-Pop</a>
+        <a  class = 'button-40' href="/generate/rap" onclick="loading();">Rap</a>
+        <a class = 'button-40' href="/generate/cyberpunk" onclick="loading();">Cyberpunk</a>
     </div>
 </div>

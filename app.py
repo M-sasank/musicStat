@@ -44,43 +44,42 @@ def artist_application():
     return render_template('input.html')
 
 
-@app.route('/you/genres')
-def genre(username='sasankmadati', term='short_term'):
-    genres = requestHandler.getGenres(username, 'short_term')
+@app.route('/you/genres/<period>', methods=['GET', 'POST'])
+def genre(period):
+    if period == '' or period == 'short':
+        period = 'short_term'
+    elif period == 'medium':
+        period = 'medium_term'
+    elif period == 'long':
+        period = 'long_term'
+    genres = requestHandler.getGenres('sasankmadati', period)
     return render_template('genre.html', data=genres)
 
-
-@app.route('/you/genres/medium')
-def genreMed(username='sasankmadati', term='medium_term'):
-    genres = requestHandler.getGenres(username, term)
-    return render_template('genre.html', data=genres)
-
-
-@app.route('/you/genres/long')
-def genreLong(username='sasankmadati', term='long_term'):
-    genres = requestHandler.getGenres(username, term)
-    return render_template('genre.html', data=genres)
-
-
-@app.route('/you/tracks', methods=['GET'])
-def you():
+@app.route('/you/tracks/<period>', methods=['GET', 'POST'])
+def you(period):
+    if period == '' or period == 'short':
+        period = 'short_term'
+    elif period == 'medium':
+        period = 'medium_term'
+    elif period == 'long':
+        period = 'long_term'
     top_tracks = []
-    top_tracks = requestHandler.getTopTracksUser(term='short_term')
+    top_tracks = requestHandler.getTopTracksUser('sasankmadati',period)
     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
 
-
-@app.route('/you/tracks/medium', methods=['GET'])
-def youMed():
-    top_tracks = []
-    top_tracks = requestHandler.getTopTracksUser(term='medium_term')
-    return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
-
-
-@app.route('/you/tracks/long', methods=['GET'])
-def youLong():
-    top_tracks = []
-    top_tracks = requestHandler.getTopTracksUser(term='long_term')
-    return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
+#
+# @app.route('/you/tracks/medium', methods=['GET'])
+# def youMed():
+#     top_tracks = []
+#     top_tracks = requestHandler.getTopTracksUser(term='medium_term')
+#     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
+#
+#
+# @app.route('/you/tracks/long', methods=['GET'])
+# def youLong():
+#     top_tracks = []
+#     top_tracks = requestHandler.getTopTracksUser(term='long_term')
+#     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
 
 
 @app.route('/moody')
@@ -91,7 +90,7 @@ def mood():
 @app.route('/generate/<genre>', methods=['GET', 'POST'])
 def generate(genre):
     if genre == 'dance':
-        playlistID = '37i9dQZF1DXcBWIGoYBM5M'
+        playlistID = '2HhaArHsOiofpUheCRPkLa'
     elif genre == 'pop':
         playlistID = '6gS3HhOiI17QNojjPuPzqc'
     elif genre == 'sad':
@@ -107,7 +106,7 @@ def generate(genre):
     elif genre == 'rap':
         playlistID = '6s5MoZzR70Qef7x4bVxDO1'
     else:
-        playlistID = '2nGEGNVprpAm4qJ0ShRjOv'
+        playlistID = '5qRiSivbLQ3QI5AH3Zsxg1'
     playlistDetails = requestHandler.getRecommendationsByGenre(playlistID)
     return render_template('generate.html', playlistDetails=playlistDetails, genre=genre,
                            username=requestHandler.spotify_username)
