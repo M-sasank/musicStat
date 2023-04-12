@@ -12,7 +12,7 @@ app = Flask(__name__)
 def home():
     top_artist = {}
     top_artist = requestHandler.topGlobal()
-    return render_template('home.html', top_artist=top_artist)
+    return render_template('home.html', top_artist=top_artist,len = len(top_artist))
 
 
 @app.route('/history', methods=['GET'])
@@ -55,6 +55,7 @@ def genre(period):
     genres = requestHandler.getGenres('sasankmadati', period)
     return render_template('genre.html', data=genres)
 
+
 @app.route('/you/tracks/<period>', methods=['GET', 'POST'])
 def you(period):
     if period == '' or period == 'short':
@@ -64,8 +65,9 @@ def you(period):
     elif period == 'long':
         period = 'long_term'
     top_tracks = []
-    top_tracks = requestHandler.getTopTracksUser('sasankmadati',period)
+    top_tracks = requestHandler.getTopTracksUser('sasankmadati', period)
     return render_template('you.html', top_tracks=top_tracks, username='sasankmadati')
+
 
 #
 # @app.route('/you/tracks/medium', methods=['GET'])
@@ -84,7 +86,7 @@ def you(period):
 
 @app.route('/moody')
 def mood():
-    return render_template('mood.html', username= 'sasankmadati')
+    return render_template('mood.html', username='sasankmadati')
 
 
 @app.route('/generate/<genre>', methods=['GET', 'POST'])
@@ -189,8 +191,7 @@ def get_artist_summary():
 @app.route('/summary')
 def summary_artists():
     results = get_artist_summary()
-    return render_template('summary.html',
-                           results=results)
+    return render_template('summary.html', results=results)
 
 
 if __name__ == '__main__':

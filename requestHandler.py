@@ -44,17 +44,7 @@ LAST_FM_BASE = 'http://ws.audioscrobbler.com/2.0/?'
 
 
 def load_cache():
-    '''opens cache file to store information
-
-    Parameters
-    ----------
-    None
-
-    Returns
-    ----------
-    cache: json
-    a json that stores previous search results
-    '''
+    """opens cache file to store information from previous searches"""
     try:
         cache_file = open(CACHE_FILE_NAME, 'r')
         cache_file_contents = cache_file.read()
@@ -66,17 +56,7 @@ def load_cache():
 
 
 def save_cache(cache):
-    ''' saves existing or new cache to contain previous searches and calls to the nps website
-    
-    Parameters
-    ----------
-    cache: json
-    cache in which to write the search into
-
-    Returns
-    ----------
-    None
-    '''
+    """ saves existing or new cache to contain previous searches and calls to the nps website"""
     cache_file = open(CACHE_FILE_NAME, 'w')
     contents_to_write = json.dumps(cache)
     cache_file.write(contents_to_write)
@@ -84,16 +64,6 @@ def save_cache(cache):
 
 
 def make_url_request_using_cache(url, cache, search_header=None):
-    ''' searches cache to see if search has been made before if search has been made, takes information from cache
-
-    Parameters
-    ----------
-    url: str
-    the url of the request being made
-
-    cache: json
-    the json file to search and see if url call has been made previously
-    '''
     if (url in cache.keys()):  # the url is our unique key
         print("Using cache")
         return cache[url]
@@ -133,18 +103,7 @@ def getImageArtist(artist_name):
 
 
 def last_fm_search(artist):
-    '''creates dictionary of artist and mbid(if one exists)
-
-    Parameters
-    ----------
-    artist: str
-    search term for artist search
-
-    Returns
-    ----------
-    artist_dict: dict
-    a dictionary that lists all entries associated with the search term taken from the LastFM API
-    '''
+    """creates dictionary of artist and mid(if one exists)"""
     response = requests.get(
         LAST_FM_BASE + f'method=artist.search&artist={artist}&api_key={LAST_FM_KEY}&limit=10&format=json')
     response = response.json()
@@ -305,14 +264,7 @@ class Artist:
             self.search_term = self.name
 
     def artist_info(self):
-        '''grabs information about an artist from LastFM API, stores artist url in self.artist_url
-
-        Parameters
-        ----------
-
-        Returns
-        ----------
-        '''
+        """grabs information about an artist from LastFM API, stores artist url in self.artist_url"""
         url = LAST_FM_BASE + f'method=artist.getinfo&artist={self.search_term}&api_key={LAST_FM_KEY}&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
         results = response['artist']
@@ -320,14 +272,8 @@ class Artist:
         self.name = self.name
 
     def get_top_tracks(self):
-        '''grabs top tracks of an artist from LastFM API, stores tracks in self.top_tracks list
-
-        Parameters
-        ----------
-
-        Returns
-        ----------
-        '''
+        """grabs top tracks of an artist from LastFM API, stores tracks in self.top_tracks list
+        """
         self.top_tracks.clear()
         url = LAST_FM_BASE + f'method=artist.gettoptracks&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=10&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
@@ -337,14 +283,7 @@ class Artist:
             self.top_tracks.append(song)
 
     def get_top_albums(self):
-        '''grabs top albums of an artist from LastFM API, stores albums in self.top_albums
-
-        Parameters
-        ----------
-
-        Returns
-        ----------
-        '''
+        """grabs top albums of an artist from LastFM API, stores albums in self.top_albums"""
         self.top_albums.clear()
         url = LAST_FM_BASE + f'method=artist.gettopalbums&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
@@ -354,14 +293,7 @@ class Artist:
             self.top_albums.append(album)
 
     def get_top_tags(self):
-        '''grabs top tags of an artist from LastFM API, stores tags in self.top_tags
-
-        Parameters
-        ----------
-
-        Returns
-        ----------
-        '''
+        """grabs top tags of an artist from LastFM API, stores tags in self.top_tags"""
         self.top_tags.clear()
         url = LAST_FM_BASE + f'method=artist.gettoptags&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
@@ -371,14 +303,7 @@ class Artist:
             self.top_tags.append(tag)
 
     def get_similar(self):
-        '''grabs artists similar to an artist from LastFM API, stores artist names and urls in self.similar
-
-        Parameters
-        ----------
-
-        Returns
-        ----------
-        '''
+        """grabs artists similar to an artist from LastFM API, stores artist names and urls in self.similar"""
         self.similar.clear()
         url = LAST_FM_BASE + f'method=artist.getsimilar&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
@@ -389,14 +314,8 @@ class Artist:
             self.similar[related_artist] = related_artist_url
 
     def get_tag_charts(self):
-        '''searches charts of the first 10 tags in self.top_tags, creates list of touples with the song, rank, and chart the song is featured in.
-
-        Parameters
-        ----------
-
-        Returns
-        ----------
-        '''
+        """searches charts of the first 10 tags in self.top_tags, creates list of touples with the song, rank,
+        and chart the song is featured in."""
         self.top_songs_by_tag.clear()
         for tag in self.top_tags[0:10]:
             url = LAST_FM_BASE + f'method=tag.gettoptracks&tag={tag}&api_key={LAST_FM_KEY}&limit=05&format=json'
@@ -409,14 +328,7 @@ class Artist:
                     self.top_songs_by_tag.append((track, rank, tag))
 
     def get_playlists(self):
-        '''grabs top playlists of an artist from Spotify API, stores playlists in self.playlists
-
-        Parameters
-        ----------
-
-        Returns
-        ----------
-        '''
+        """grabs top playlists of an artist from Spotify API, stores playlists in self.playlists"""
         self.playlists.clear()
         url = SPOTIFY_BASE + 'search?q=' + self.search_term + '&type=playlist&limit=10'
         response = make_url_request_using_cache(url, CACHE_DICT, search_header=headers)
