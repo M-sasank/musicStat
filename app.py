@@ -21,22 +21,16 @@ def history():
     return render_template('history.html', history=history)
 
 
-@app.route('/you/artists/short', methods=['GET'])
-def userArtists():
-    userArtists = requestHandler.getUserArtists('short_term')
+@app.route('/you/artists/<period>', methods=['GET'])
+def userArtists(period):
+    if period == '' or period == 'short':
+        period = 'short_term'
+    elif period == 'medium':
+        period = 'medium_term'
+    elif period == 'long':
+        period = 'long_term'
+    userArtists = requestHandler.getUserArtists(period)
     return render_template('userArtitsts.html', userArtists=userArtists)
-
-
-@app.route('/you/artists/medium', methods=['GET'])
-def userArtists1():
-    userArtists1 = requestHandler.getUserArtists('medium_term')
-    return render_template('userArtitsts.html', userArtists=userArtists1)
-
-
-@app.route('/you/artists/long', methods=['GET'])
-def userArtists2():
-    userArtists2 = requestHandler.getUserArtists('long_term')
-    return render_template('userArtitsts.html', userArtists=userArtists2)
 
 
 @app.route('/search')
@@ -133,7 +127,6 @@ def artist_results():
     top_tracks = artist_inst.top_tracks
     top_albums = artist_inst.top_albums
     top_tags = artist_inst.top_tags
-    playlists = artist_inst.playlists
     top_tags_chart = artist_inst.top_songs_by_tag
     similar = artist_inst.similar
 
@@ -172,8 +165,7 @@ def artist_results():
     conn.commit()
 
     return render_template('results.html', name=name, artist_url=artist_url, top_tracks=top_tracks,
-                           top_albums=top_albums, top_tags=top_tags, top_tags_chart=top_tags_chart,
-                           playlists=playlists, similar=similar)
+                           top_albums=top_albums, top_tags=top_tags, top_tags_chart=top_tags_chart, similar=similar)
 
 
 def get_artist_summary():

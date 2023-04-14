@@ -327,17 +327,6 @@ class Artist:
                 if song['artist']['name'].lower() == self.name.lower():
                     self.top_songs_by_tag.append((track, rank, tag))
 
-    def get_playlists(self):
-        """grabs top playlists of an artist from Spotify API, stores playlists in self.playlists"""
-        self.playlists.clear()
-        url = SPOTIFY_BASE + 'search?q=' + self.search_term + '&type=playlist&limit=10'
-        response = make_url_request_using_cache(url, CACHE_DICT, search_header=headers)
-        results = response['playlists']['items']
-        for item in results:
-            playlist = item['name']
-            playlist_url = item['external_urls']['spotify']
-            self.playlists[playlist] = playlist_url
-
 
 def build_artist_profile(artist_inst):
     '''builds up artist instantiation by implementing all functions within the class.
@@ -355,7 +344,6 @@ def build_artist_profile(artist_inst):
     artist_inst.get_top_tags()
     artist_inst.get_tag_charts()
     artist_inst.get_similar()
-    artist_inst.get_playlists()
 
 
 def getHistory():
