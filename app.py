@@ -3,16 +3,46 @@ import requests
 import json
 import time
 import sqlite3
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, session
+import configparser
 
 app = Flask(__name__)
 
 
-@app.route('/', methods=['GET'])
+@app.route('/')
+def authenticate():
+    global redirect_uri
+    redirect_uri = request.base_url + 'api_callback'
+    # use config parser to write redirect_uri to config file
+    config = configparser.ConfigParser()
+    config['SPOTIFY'] = {"REDIRECT_URI": redirect_uri}
+    with open('config.ini', 'w') as configfile:
+        config.write(configfile)
+    print(redirect_uri, " asdadasd")
+    auth_url = f'{requestHandler.API_BASE}/authorize?client_id={requestHandler.CLIENT_ID}&response_type=code&redirect_uri={redirect_uri}&scope={requestHandler.scope}&show_dialog={requestHandler.SHOW_DIALOG}'
+    return redirect(auth_url)
+
+
+@app.route('/uri')
+def uri():
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    text = config['SPOTIFY']['REDIRECT_URI']
+    return text
+
+
+@app.route("/api_callback")
+def api_callback():
+    requestHandler.getAccessToken(
+        request.args.get('code'))
+    return redirect("home")
+
+
+@app.route('/home', methods=['GET'])
 def home():
     top_artist = {}
     top_artist = requestHandler.topGlobal()
-    return render_template('home.html', top_artist=top_artist,len = len(top_artist))
+    return render_template('home.html', top_artist=top_artist, len=len(top_artist))
 
 
 @app.route('/history', methods=['GET'])
@@ -187,5 +217,5 @@ def summary_artists():
 
 
 if __name__ == '__main__':
-    print('starting Flask app', app.name)
+    # print('starting Flask app', app.name)
     app.run(debug=True)

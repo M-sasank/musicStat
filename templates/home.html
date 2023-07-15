@@ -25,11 +25,7 @@ a {
 	color: inherit;
 }
 
-.wrapper {
-	{#max-width: 80rem;#}
-	margin: 0 auto;
-	padding: 0 var(--pad);
-}
+
 
 .wrapper > * + * {
 	margin-top: var(--pad);
@@ -113,10 +109,11 @@ ol {
 }
 .li span {
 	grid-column: 2;
+    width:fit-content;overflow:hidden;height:50px;
 }
 
 .li span:first-of-type {
-	font-size: 1.75em;
+	font-size: 1.4em;
 	padding-top: 1rem;
 }
 
@@ -135,14 +132,14 @@ h2 {
 }
 </style>
  <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="/">musicStat</a>
+  <a class="navbar-brand" href="/home">musicStat</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
   <div class="collapse navbar-collapse" id="navbarNav">
     <ul class="navbar-nav">
       <li class="nav-item active">
-        <a class="nav-link" href="/">Home<span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="/home">Home<span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/search">Search</a>
@@ -166,22 +163,22 @@ h2 {
   </div>
 </nav>
 <body>
-    <main>
-    <br>
-    <br>
+    <div class="user-info">
         <div class="wrapper">
             <h1>Top Tracks Globally </h1>
+            <div class="ol_list">
             <ol start="1">
                 {% for artist in top_artist %}
                 <li class = "li">
                     <img src="{{ artist[2] }}" alt="artist cover" />
-                    <span>{{ artist[1] }}</span>
                     <span>{{ artist[0] }}</span>
+                    <span>{{ artist[1] }}</span>
                 </li>
                 {% endfor %}
             </ol>
+                </div>
         </div>
     <br>
     <br>
-    </main>
+    </div>
 </body>

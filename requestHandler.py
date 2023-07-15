@@ -1,3 +1,4 @@
+import sys
 import base64
 import webbrowser
 from datetime import datetime, timedelta
@@ -10,18 +11,38 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
 import time
 import sqlite3
-from flask import Flask, render_template
+import app
+import configparser
+
 CLIENT_ID = '8c3a7ba894f74164a797d3e0512b7f82'
 LAST_FM_KEY = '304036bcba16c776159057cf1ea09aa2'
 CLIENT_SECRET = 'ecf3ff7d354741468d66ae216276f305'
+API_BASE = 'https://accounts.spotify.com'
+scope = 'user-read-recently-played user-top-read user-library-read playlist-modify-public playlist-read-private'
+SHOW_DIALOG = True
+# use config parser to read in the config file
 
-def init_user():
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET, redirect_uri='http://localhost:7777/callback', scope='user-top-read'))
+
+def getAccessToken(code):
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    REDIRECT_URI = config['SPOTIFY']['REDIRECT_URI']
+    print(REDIRECT_URI, "sda")
+    auth_token_url = f"{API_BASE}/api/token"
+    res = requests.post(auth_token_url, data={
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": REDIRECT_URI,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET
+    })
+    access_token = res.json().get("access_token")
+    global sp
+    sp = spotipy.Spotify(auth=access_token)
     user = sp.current_user()
+    global spotify_username
     spotify_username = user['id']
-    return spotify_username
-
-spotify_username = init_user()
+    return access_token
 
 
 CACHE_FILE_NAME = 'cacheArtistSearch.json'
@@ -84,11 +105,9 @@ def make_url_request_using_cache(url, cache, search_header=None):
             return cache[url]
 
 
-import sys
-
-
 def getImageArtist(artist_name):
-    spotify = spotipy.Spotify(auth_manager=SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET))
+    spotify = spotipy.Spotify(
+        auth_manager=SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET))
 
     if len(sys.argv) > 1:
         name = ' '.join(sys.argv[1:])
@@ -141,7 +160,8 @@ def getTopArtists():
 
 
 def getTokenSpotify():
-    encoded_credentials = base64.b64encode(CLIENT_ID.encode() + b':' + CLIENT_SECRET.encode()).decode("utf-8")
+    encoded_credentials = base64.b64encode(
+        CLIENT_ID.encode() + b':' + CLIENT_SECRET.encode()).decode("utf-8")
 
     token_headers = {
         "Authorization": "Basic " + encoded_credentials,
@@ -151,19 +171,21 @@ def getTokenSpotify():
         "grant_type": "authorization_code",
     }
 
-    r = requests.post("https://accounts.spotify.com/api/token", data=token_data, headers=token_headers)
+    r = requests.post("https://accounts.spotify.com/api/token",
+                      data=token_data, headers=token_headers)
     return r
 
 
 def topGlobal():
-    auth_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
-    sp = spotipy.Spotify(auth_manager=auth_manager)
+    # auth_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
+    # sp = spotipy.Spotify(auth_manager=auth_manager)
 
     # Specify the country code for which you want to fetch the top charts
     country_code = 'US'
     top_artist = []
     # Get the top 10 tracks for the specified country
-    top_tracks = sp.playlist_items('spotify:playlist:37i9dQZEVXbNG2KDcFcKOF', market=country_code, limit=10)
+    top_tracks = sp.playlist_items(
+        'spotify:playlist:37i9dQZEVXbNG2KDcFcKOF', market=country_code, limit=10)
     for i in range(10):
         y = top_tracks['items'][i]['track']['artists'][0]['name']
         x = top_tracks['items'][i]['track']['name']
@@ -173,12 +195,10 @@ def topGlobal():
 
 
 def getUserArtists(term):
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                                                   redirect_uri='http://localhost:7777/callback', scope='user-top-read',
-                                                   username=spotify_username))
     results = sp.current_user_top_artists(limit=10, time_range=term)
     topUserArtists = []
-    for item in range(10):
+    for item in range(len(results['items'])):
+        # print(len(results['items']))
         x = results['items'][item]['name']
         y = results['items'][item]['popularity']
         # image url here
@@ -189,21 +209,17 @@ def getUserArtists(term):
 
 def getTopTracksUser(username='sasankmadati', term='short_term'):
     # create a SpotifyOAuth object to authenticate the user
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                                                   redirect_uri='http://localhost:7777/callback',
-                                                   scope='user-top-read', username=spotify_username))
 
     # get the user's top 10 tracks
     results = sp.current_user_top_tracks(limit=10, time_range=term)
     topUserTracks = []
     for item in range(10):
-        x = results['items'][item]['name']
-        # album name here
-        y = results['items'][item]['album']['name']
+        x = results['items'][item]['album']['name']
+        y = results['items'][item]['name']
         # image url here
         z = results['items'][item]['album']['images'][0]['url']
         topUserTracks.append((x, y, z))
-    print(topUserTracks)
+    # print(topUserTracks)
     return topUserTracks
 
 
@@ -225,7 +241,8 @@ def getTags(artist):
 
 
 def albumImage(song):
-    spotify = spotipy.Spotify(auth_manager=SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET))
+    spotify = spotipy.Spotify(
+        auth_manager=SpotifyClientCredentials(CLIENT_ID, CLIENT_SECRET))
 
     if len(sys.argv) > 1:
         name = ' '.join(sys.argv[1:])
@@ -265,7 +282,8 @@ class Artist:
 
     def artist_info(self):
         """grabs information about an artist from LastFM API, stores artist url in self.artist_url"""
-        url = LAST_FM_BASE + f'method=artist.getinfo&artist={self.search_term}&api_key={LAST_FM_KEY}&format=json'
+        url = LAST_FM_BASE + \
+            f'method=artist.getinfo&artist={self.search_term}&api_key={LAST_FM_KEY}&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
         results = response['artist']
         self.artist_url = results['url']
@@ -275,7 +293,8 @@ class Artist:
         """grabs top tracks of an artist from LastFM API, stores tracks in self.top_tracks list
         """
         self.top_tracks.clear()
-        url = LAST_FM_BASE + f'method=artist.gettoptracks&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=10&format=json'
+        url = LAST_FM_BASE + \
+            f'method=artist.gettoptracks&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=10&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
         results = response['toptracks']['track']
         for item in results:
@@ -285,7 +304,8 @@ class Artist:
     def get_top_albums(self):
         """grabs top albums of an artist from LastFM API, stores albums in self.top_albums"""
         self.top_albums.clear()
-        url = LAST_FM_BASE + f'method=artist.gettopalbums&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
+        url = LAST_FM_BASE + \
+            f'method=artist.gettopalbums&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
         results = response['topalbums']['album']
         for item in results:
@@ -295,7 +315,8 @@ class Artist:
     def get_top_tags(self):
         """grabs top tags of an artist from LastFM API, stores tags in self.top_tags"""
         self.top_tags.clear()
-        url = LAST_FM_BASE + f'method=artist.gettoptags&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
+        url = LAST_FM_BASE + \
+            f'method=artist.gettoptags&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
         results = response['toptags']['tag']
         for item in results:
@@ -305,7 +326,8 @@ class Artist:
     def get_similar(self):
         """grabs artists similar to an artist from LastFM API, stores artist names and urls in self.similar"""
         self.similar.clear()
-        url = LAST_FM_BASE + f'method=artist.getsimilar&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
+        url = LAST_FM_BASE + \
+            f'method=artist.getsimilar&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
         response = make_url_request_using_cache(url, CACHE_DICT)
         results = response['similarartists']['artist']
         for item in results:
@@ -318,7 +340,8 @@ class Artist:
         and chart the song is featured in."""
         self.top_songs_by_tag.clear()
         for tag in self.top_tags[0:10]:
-            url = LAST_FM_BASE + f'method=tag.gettoptracks&tag={tag}&api_key={LAST_FM_KEY}&limit=05&format=json'
+            url = LAST_FM_BASE + \
+                f'method=tag.gettoptracks&tag={tag}&api_key={LAST_FM_KEY}&limit=05&format=json'
             response = make_url_request_using_cache(url, CACHE_DICT)
             results = response['tracks']['track']
             for song in results:
@@ -348,9 +371,6 @@ def build_artist_profile(artist_inst):
 
 def getHistory():
     # get users listening history using spotipy
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                                                   redirect_uri='http://localhost:7777/callback',
-                                                   scope='user-read-recently-played', username=spotify_username))
     results = sp.current_user_recently_played(limit=50)
     history = []
     for item in results['items']:
@@ -370,19 +390,11 @@ def getHistory():
         timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M')
         timestamp = timestamp.strftime('%Y-%m-%d %I:%M %p')
 
-
-
-
-
-
         history.append((artist, song, image, timestamp))
     return history
 
 
 def getGenres(username, term):
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                                                   redirect_uri='http://localhost:7777/callback',
-                                                   scope='user-top-read', username=spotify_username))
     topTracks = sp.current_user_top_tracks(limit=50, time_range=term)
     genres = []
     for item in range(50):
@@ -406,16 +418,12 @@ def getGenres(username, term):
         data.append([item[0], item[1]])
     # add to the front of the list, ["Task":"Genres"]
     # data.insert(0, ["Task", "Genres"])
-    for item in data:
-        print(item[0], int(item[1]))
+    # for item in data:
+    #     print(item[0], int(item[1]))
     return data
 
 
 def getRecommendationsByGenre(playlist):
-    scope = 'user-library-read playlist-modify-public playlist-read-private'
-    sp = spotipy.Spotify(auth_manager=SpotifyOAuth(client_id=CLIENT_ID, client_secret=CLIENT_SECRET,
-                                                   redirect_uri='http://localhost:7777/callback',
-                                                   scope=scope))
     spotify_username = sp.me()['id']
     sourcePlaylist = sp.playlist(playlist)
     seed_ids = []
@@ -427,6 +435,8 @@ def getRecommendationsByGenre(playlist):
     recs_to_add = []
     for i in range(0, 20):
         recs_to_add.append(rec_tracks[i]['id'])
-    playlist_recs = sp.user_playlist_create(spotify_username, name='Songs from {}'.format(sourcePlaylist['name']))
-    sp.user_playlist_add_tracks(spotify_username, playlist_recs['id'], recs_to_add)
+    playlist_recs = sp.user_playlist_create(
+        spotify_username, name='Songs from {}'.format(sourcePlaylist['name']))
+    sp.user_playlist_add_tracks(
+        spotify_username, playlist_recs['id'], recs_to_add)
     return playlist_recs

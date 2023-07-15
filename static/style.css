@@ -57,6 +57,17 @@ nav a:hover {
   display: block;
 
 }
+.wrapper {
+    width: fit-content;
+    height: fit-content;
+	margin: 0 auto;
+	padding: 15px var(--pad);
+    background: lightgray;
+}
+.ol_list{
+    width: auto;
+    height: auto;
+}
 
 
 
