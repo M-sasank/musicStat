@@ -6,7 +6,8 @@ from urllib.parse import urlencode
 import os
 from redis import Redis
 from dotenv import load_dotenv
-redis_client = Redis(host='localhost', port=6370)
+redis_host = os.environ.get('REDIS_HOST', 'localhost')
+redis_client = Redis(host=redis_host, port=6379)
 import requests
 import json
 import spotipy
