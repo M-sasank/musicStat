@@ -3,7 +3,8 @@ version: '3'
 services:
   musicstat:
     build: .
-    image: musicstat:beta
+    image: sasankmadati/musicstat:beta
+    restart: always
     ports:
       - "5000:5000"
     depends_on:
@@ -12,6 +13,7 @@ services:
       - .env
   redis:
     image: redis
+    restart: always
     ports:
-      - "6370:6370"
+      - "6379:6379"
     
