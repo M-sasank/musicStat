@@ -3,26 +3,36 @@ import base64
 import webbrowser
 from datetime import datetime, timedelta
 from urllib.parse import urlencode
-
+import os
+from redis import Redis
+from dotenv import load_dotenv
+redis_client = Redis(host='localhost', port=6370)
 import requests
 import json
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
-from spotipy.oauth2 import SpotifyOAuth
 import time
-import sqlite3
-import app
+
 import configparser
 
-CLIENT_ID = '8c3a7ba894f74164a797d3e0512b7f82'
-LAST_FM_KEY = '304036bcba16c776159057cf1ea09aa2'
-CLIENT_SECRET = 'ecf3ff7d354741468d66ae216276f305'
-API_BASE = 'https://accounts.spotify.com'
-scope = 'user-read-recently-played user-top-read user-library-read playlist-modify-public playlist-read-private'
-SHOW_DIALOG = True
-# use config parser to read in the config file
+load_dotenv()
 
+CLIENT_ID = os.getenv('CLIENT_ID')
+LAST_FM_KEY = os.getenv('LAST_FM_KEY')
+CLIENT_SECRET = os.getenv('CLIENT_SECRET')
+API_BASE = os.getenv('API_BASE')
+scope = os.getenv('scope')
+SHOW_DIALOG = os.getenv('SHOW_DIALOG')
 
+def checkSessionTimeout():
+    try:
+        req = sp.playlist_items(
+            'spotify:playlist:37i9dQZEVXbNG2KDcFcKOF', market='US', limit=10)
+        print("Session is active")
+        return True
+    except:
+        return False
+    
 def getAccessToken(code):
     config = configparser.ConfigParser()
     config.read('config.ini')
@@ -42,11 +52,10 @@ def getAccessToken(code):
     user = sp.current_user()
     global spotify_username
     spotify_username = user['id']
-    return access_token
+    return spotify_username
 
 
-CACHE_FILE_NAME = 'cacheArtistSearch.json'
-CACHE_DICT = {}
+
 AUTH_URL = 'https://accounts.spotify.com/api/token'
 auth_response = requests.post(AUTH_URL, {
     'grant_type': 'client_credentials',
@@ -64,45 +73,30 @@ SPOTIFY_BASE = 'https://api.spotify.com/v1/'
 LAST_FM_BASE = 'http://ws.audioscrobbler.com/2.0/?'
 
 
-def load_cache():
-    """opens cache file to store information from previous searches"""
-    try:
-        cache_file = open(CACHE_FILE_NAME, 'r')
-        cache_file_contents = cache_file.read()
-        cache = json.loads(cache_file_contents)
-        cache_file.close()
-    except:
-        cache = {}
-    return cache
-
-
-def save_cache(cache):
-    """ saves existing or new cache to contain previous searches and calls to the nps website"""
-    cache_file = open(CACHE_FILE_NAME, 'w')
-    contents_to_write = json.dumps(cache)
-    cache_file.write(contents_to_write)
-    cache_file.close()
-
-
-def make_url_request_using_cache(url, cache, search_header=None):
-    if (url in cache.keys()):  # the url is our unique key
-        print("Using cache")
-        return cache[url]
-    else:
-        if search_header:
-            print("Fetching")
-            time.sleep(1)
-            response = requests.get(url, headers=headers)
-            cache[url] = response.json()
-            save_cache(cache)
-            return cache[url]
+def make_url_request_using_cache(url, type, search_header=None):
+    if search_header:
+        if redis_client.get(f'{url}_{type}'):
+            print("Cache Hit")
+            return json.loads(redis_client.get(f'{url}_{type}'))
         else:
+            print("Cache Miss")
+            print("Fetching")
+            response = requests.get(url, headers=headers)
+            json_data= response.json()
+            redis_client.setex(f'{url}_{type}',3600, json.dumps(json_data))
+            return json_data
+    else:
+        if redis_client.get(f'{url}_{type}'):
+            print("Cache Hit")
+            return json.loads(redis_client.get(f'{url}_{type}'))
+        else:
+            print("Cache Miss")
             print("Fetching")
             time.sleep(1)
             response = requests.get(url)
-            cache[url] = response.json()
-            save_cache(cache)
-            return cache[url]
+            json_data = response.json()
+            redis_client.setex(f'{url}_{type}',3600, json.dumps(json_data))
+            return json_data
 
 
 def getImageArtist(artist_name):
@@ -136,61 +130,22 @@ def last_fm_search(artist):
     # return artist_dict,k
 
 
-def getTopArtists():
-    API_KEY = LAST_FM_KEY
-    USER_AGENT = 'Sasank'
-
-    url = 'https://ws.audioscrobbler.com/2.0/'
-    param = {}
-    header = {
-        'user-agent': USER_AGENT
-    }
-
-    param['api_key'] = API_KEY
-    param['method'] = 'chart.gettopartists'
-    param['format'] = 'json'
-    response = requests.get(url, headers=header, params=param)
-    top_artists = []
-    for item in range(10):
-        x = response.json()['artists']['artist'][item]['name']
-        y = response.json()['artists']['artist'][item]['playcount']
-        z = getImageArtist(x)
-        top_artists.append((x, y, z))
-    return top_artists
-
-
-def getTokenSpotify():
-    encoded_credentials = base64.b64encode(
-        CLIENT_ID.encode() + b':' + CLIENT_SECRET.encode()).decode("utf-8")
-
-    token_headers = {
-        "Authorization": "Basic " + encoded_credentials,
-    }
-
-    token_data = {
-        "grant_type": "authorization_code",
-    }
-
-    r = requests.post("https://accounts.spotify.com/api/token",
-                      data=token_data, headers=token_headers)
-    return r
-
-
 def topGlobal():
     # auth_manager = SpotifyClientCredentials(client_id=CLIENT_ID, client_secret=CLIENT_SECRET)
     # sp = spotipy.Spotify(auth_manager=auth_manager)
 
     # Specify the country code for which you want to fetch the top charts
-    country_code = 'US'
+    country_code = 'IN'
     top_artist = []
     # Get the top 10 tracks for the specified country
+    # simple try catch block to handle exceptions
     top_tracks = sp.playlist_items(
-        'spotify:playlist:37i9dQZEVXbNG2KDcFcKOF', market=country_code, limit=10)
+            'spotify:playlist:37i9dQZEVXbNG2KDcFcKOF', market=country_code, limit=10)
     for i in range(10):
         y = top_tracks['items'][i]['track']['artists'][0]['name']
         x = top_tracks['items'][i]['track']['name']
         z = top_tracks['items'][i]['track']['album']['images'][0]['url']
-        top_artist.append((x, y, z))
+        top_artist.append([x, y, z])
     return top_artist
 
 
@@ -203,11 +158,11 @@ def getUserArtists(term):
         y = results['items'][item]['popularity']
         # image url here
         z = results['items'][item]['images'][0]['url']
-        topUserArtists.append((x, y, z))
+        topUserArtists.append([x, y, z])
     return topUserArtists
 
 
-def getTopTracksUser(username='sasankmadati', term='short_term'):
+def getTopTracksUser(term='short_term'):
     # create a SpotifyOAuth object to authenticate the user
 
     # get the user's top 10 tracks
@@ -218,26 +173,10 @@ def getTopTracksUser(username='sasankmadati', term='short_term'):
         y = results['items'][item]['name']
         # image url here
         z = results['items'][item]['album']['images'][0]['url']
-        topUserTracks.append((x, y, z))
+        topUserTracks.append([x, y, z])
     # print(topUserTracks)
     return topUserTracks
 
-
-def getTags(artist):
-    param = {}
-    url = 'https://ws.audioscrobbler.com/2.0/'
-    USER_AGENT = 'sasank'
-    param['api_key'] = LAST_FM_KEY
-    param['method'] = 'artist.gettoptags'
-    param['format'] = 'json'
-    param['artist'] = artist
-    header = {
-        'user-agent': USER_AGENT
-    }
-
-    response = requests.get(url, headers=header, params=param)
-    tags = [response.json()['toptags']['tag'][i]['name'] for i in range(5)]
-    return tags
 
 
 def albumImage(song):
@@ -284,7 +223,7 @@ class Artist:
         """grabs information about an artist from LastFM API, stores artist url in self.artist_url"""
         url = LAST_FM_BASE + \
             f'method=artist.getinfo&artist={self.search_term}&api_key={LAST_FM_KEY}&format=json'
-        response = make_url_request_using_cache(url, CACHE_DICT)
+        response = make_url_request_using_cache(url, "info")
         results = response['artist']
         self.artist_url = results['url']
         self.name = self.name
@@ -295,7 +234,7 @@ class Artist:
         self.top_tracks.clear()
         url = LAST_FM_BASE + \
             f'method=artist.gettoptracks&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=10&format=json'
-        response = make_url_request_using_cache(url, CACHE_DICT)
+        response = make_url_request_using_cache(url, "tracks")
         results = response['toptracks']['track']
         for item in results:
             song = item['name']
@@ -306,7 +245,7 @@ class Artist:
         self.top_albums.clear()
         url = LAST_FM_BASE + \
             f'method=artist.gettopalbums&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
-        response = make_url_request_using_cache(url, CACHE_DICT)
+        response = make_url_request_using_cache(url, "albums")
         results = response['topalbums']['album']
         for item in results:
             album = item['name']
@@ -317,7 +256,7 @@ class Artist:
         self.top_tags.clear()
         url = LAST_FM_BASE + \
             f'method=artist.gettoptags&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
-        response = make_url_request_using_cache(url, CACHE_DICT)
+        response = make_url_request_using_cache(url, "tags")
         results = response['toptags']['tag']
         for item in results:
             tag = item['name']
@@ -328,7 +267,7 @@ class Artist:
         self.similar.clear()
         url = LAST_FM_BASE + \
             f'method=artist.getsimilar&artist={self.search_term}&api_key={LAST_FM_KEY}&limit=05&format=json'
-        response = make_url_request_using_cache(url, CACHE_DICT)
+        response = make_url_request_using_cache(url, "similar")
         results = response['similarartists']['artist']
         for item in results:
             related_artist = item['name']
@@ -342,30 +281,21 @@ class Artist:
         for tag in self.top_tags[0:10]:
             url = LAST_FM_BASE + \
                 f'method=tag.gettoptracks&tag={tag}&api_key={LAST_FM_KEY}&limit=05&format=json'
-            response = make_url_request_using_cache(url, CACHE_DICT)
+            response = make_url_request_using_cache(url, "tag_charts")
             results = response['tracks']['track']
             for song in results:
                 track = song['name']
                 rank = song['@attr']['rank']
                 if song['artist']['name'].lower() == self.name.lower():
-                    self.top_songs_by_tag.append((track, rank, tag))
+                    self.top_songs_by_tag.append([track, rank, tag])
 
 
 def build_artist_profile(artist_inst):
-    '''builds up artist instantiation by implementing all functions within the class.
-
-        Parameters
-        ----------
-        artist_inst = class instance
-
-        Returns
-        ----------
-        '''
     artist_inst.artist_info()
     artist_inst.get_top_tracks()
     artist_inst.get_top_albums()
     artist_inst.get_top_tags()
-    artist_inst.get_tag_charts()
+    # artist_inst.get_tag_charts()
     artist_inst.get_similar()
 
 
@@ -390,11 +320,11 @@ def getHistory():
         timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M')
         timestamp = timestamp.strftime('%Y-%m-%d %I:%M %p')
 
-        history.append((artist, song, image, timestamp))
+        history.append([artist, song, image, timestamp])
     return history
 
 
-def getGenres(username, term):
+def getGenres(term):
     topTracks = sp.current_user_top_tracks(limit=50, time_range=term)
     genres = []
     for item in range(50):
@@ -416,10 +346,6 @@ def getGenres(username, term):
     data = list()
     for item in sortedGenres[:12]:
         data.append([item[0], item[1]])
-    # add to the front of the list, ["Task":"Genres"]
-    # data.insert(0, ["Task", "Genres"])
-    # for item in data:
-    #     print(item[0], int(item[1]))
     return data
 
 

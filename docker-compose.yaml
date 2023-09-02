@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  musicstat:
+    build: .
+    image: musicstat:beta
+    ports:
+      - "5000:5000"
+    depends_on:
+      - redis
+    env_file:
+      - .env
+  redis:
+    image: redis
+    ports:
+      - "6370:6370"
+    
